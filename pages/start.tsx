@@ -52,7 +52,7 @@ export default function Start() {
 
     const handleTyping = (e: any) => {
         check_ignored_keys(e);
-
+        
         if (e.key === 'Backspace') {
             currentIndex > 0 && setCurrentIndex(currentIndex - 1);
             setTypedWords(typedWords.slice(0, -1));
@@ -68,7 +68,7 @@ export default function Start() {
         setTypedWords(typedWords + e.key);
         words[currentIndex] === e.key ? (
             setCorrectIndexes([...correctIndexes, currentIndex]),
-            !wrongIndexes.includes(currentIndex) && setScore(score + 1)
+            (!wrongIndexes.includes(currentIndex) && e.keyCode !== 32) && setScore(score + 1)
         ) : setWrongIndexes([...wrongIndexes, currentIndex]);
     }
 
