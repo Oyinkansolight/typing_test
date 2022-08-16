@@ -2,7 +2,7 @@ import AppContext from '../context';
 import { Layout } from '../components'
 import { WORD_LENGTH } from '../constants';
 import { countWords, generateWords } from '../helpers';
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useEffect, useRef, useState } from 'react';
 
 export default function Start() {
     const { time, setTime, words, setWords, wordLength, setWordLength } = useContext(AppContext);
@@ -13,6 +13,7 @@ export default function Start() {
     const [currentIndex, setCurrentIndex] = useState(0);
     const [wrongIndexes, setWrongIndexes] = useState<number[]>([]);
     const [correctIndexes, setCorrectIndexes] = useState<number[]>([]);
+    const all_done = useRef(false)
 
     useEffect(() => {
         if (!words) {
@@ -21,8 +22,8 @@ export default function Start() {
             setWords(new_words);
         }
 
-        console.log(completed);
-        console.log(currentIndex, words.length);
+        all_done.current = completed;
+
     }, [time, words, wordLength, setWordLength, setWords, currentIndex, wrongIndexes, correctIndexes, typedWords, completed, setCompleted])
 
     const handleStart = () => {
@@ -30,10 +31,10 @@ export default function Start() {
 
         let refreshIntervalId = setInterval(() => {
             setTime((time: number) => {
-                // if (all_done) {
-                //     clearInterval(refreshIntervalId);
-                //     return time;
-                // }
+                if (all_done.current) {
+                    clearInterval(refreshIntervalId);
+                    return time;
+                }
 
                 if (time === 0) {
                     clearInterval(refreshIntervalId)
@@ -89,7 +90,7 @@ export default function Start() {
                 {(completed || String(time) === 'Time Up!') &&
                     <div>
                         <div className='text-6xl text-purple-800 font-bold text-right'>
-                            Score: {score}
+                            Score: {score} / {words.split(' ').join('').length}
                         </div>
                     </div>
                 }
