@@ -6,6 +6,8 @@ import React, { useContext, useEffect, useRef, useState } from 'react';
 
 export default function Start() {
     const { time, setTime, words, setWords, wordLength, setWordLength } = useContext(AppContext);
+
+    const all_done = useRef(false);
     const [score, setScore] = useState(0);
     const [started, setStarted] = useState(false);
     const [typedWords, setTypedWords] = useState('');
@@ -13,7 +15,13 @@ export default function Start() {
     const [currentIndex, setCurrentIndex] = useState(0);
     const [wrongIndexes, setWrongIndexes] = useState<number[]>([]);
     const [correctIndexes, setCorrectIndexes] = useState<number[]>([]);
-    const all_done = useRef(false)
+
+    const maxScore = words.split(' ').join('').length;
+    let mapped_index: { [key: number]: string } = {};
+
+    for (let index = 0; index < words.length; index++) {
+        mapped_index[index] = words[index];
+    }
 
     useEffect(() => {
         if (!words) {
@@ -53,7 +61,7 @@ export default function Start() {
 
     const handleTyping = (e: any) => {
         check_ignored_keys(e);
-        
+
         if (e.key === 'Backspace') {
             currentIndex > 0 && setCurrentIndex(currentIndex - 1);
             setTypedWords(typedWords.slice(0, -1));
@@ -67,7 +75,7 @@ export default function Start() {
         currentIndex < words.length && setCurrentIndex(currentIndex + 1);
 
         setTypedWords(typedWords + e.key);
-        words[currentIndex] === e.key ? (
+        mapped_index[currentIndex] === e.key ? (
             setCorrectIndexes([...correctIndexes, currentIndex]),
             (!wrongIndexes.includes(currentIndex) && e.keyCode !== 32) && setScore(score + 1)
         ) : setWrongIndexes([...wrongIndexes, currentIndex]);
@@ -90,7 +98,7 @@ export default function Start() {
                 {(completed || String(time) === 'Time Up!') &&
                     <div>
                         <div className='text-6xl text-purple-800 font-bold text-right'>
-                            Score: {score} / {words.split(' ').join('').length}
+                            Score: {score} / {maxScore}
                         </div>
                     </div>
                 }
