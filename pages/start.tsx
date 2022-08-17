@@ -2,10 +2,12 @@ import AppContext from '../context';
 import { Layout } from '../components'
 import { WORD_LENGTH } from '../constants';
 import { countWords, generateWords } from '../helpers';
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useEffect, useRef, useState } from 'react';
 
 export default function Start() {
     const { time, setTime, words, setWords, wordLength, setWordLength } = useContext(AppContext);
+
+    const all_done = useRef(false);
     const [score, setScore] = useState(0);
     const [started, setStarted] = useState(false);
     const [typedWords, setTypedWords] = useState('');
@@ -14,6 +16,13 @@ export default function Start() {
     const [wrongIndexes, setWrongIndexes] = useState<number[]>([]);
     const [correctIndexes, setCorrectIndexes] = useState<number[]>([]);
 
+    const maxScore = words.split(' ').join('').length;
+    let mapped_index: { [key: number]: string } = {};
+
+    for (let index = 0; index < words.length; index++) {
+        mapped_index[index] = words[index];
+    }
+
     useEffect(() => {
         if (!words) {
             setWordLength(WORD_LENGTH);
@@ -21,8 +30,8 @@ export default function Start() {
             setWords(new_words);
         }
 
-        console.log(completed);
-        console.log(currentIndex, words.length);
+        all_done.current = completed;
+
     }, [time, words, wordLength, setWordLength, setWords, currentIndex, wrongIndexes, correctIndexes, typedWords, completed, setCompleted])
 
     const handleStart = () => {
@@ -30,10 +39,10 @@ export default function Start() {
 
         let refreshIntervalId = setInterval(() => {
             setTime((time: number) => {
-                // if (all_done) {
-                //     clearInterval(refreshIntervalId);
-                //     return time;
-                // }
+                if (all_done.current) {
+                    clearInterval(refreshIntervalId);
+                    return time;
+                }
 
                 if (time === 0) {
                     clearInterval(refreshIntervalId)
@@ -52,7 +61,7 @@ export default function Start() {
 
     const handleTyping = (e: any) => {
         check_ignored_keys(e);
-        
+
         if (e.key === 'Backspace') {
             currentIndex > 0 && setCurrentIndex(currentIndex - 1);
             setTypedWords(typedWords.slice(0, -1));
@@ -66,7 +75,7 @@ export default function Start() {
         currentIndex < words.length && setCurrentIndex(currentIndex + 1);
 
         setTypedWords(typedWords + e.key);
-        words[currentIndex] === e.key ? (
+        mapped_index[currentIndex] === e.key ? (
             setCorrectIndexes([...correctIndexes, currentIndex]),
             (!wrongIndexes.includes(currentIndex) && e.keyCode !== 32) && setScore(score + 1)
         ) : setWrongIndexes([...wrongIndexes, currentIndex]);
@@ -89,7 +98,7 @@ export default function Start() {
                 {(completed || String(time) === 'Time Up!') &&
                     <div>
                         <div className='text-6xl text-purple-800 font-bold text-right'>
-                            Score: {score}
+                            Score: {score} / {maxScore}
                         </div>
                     </div>
                 }
