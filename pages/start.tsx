@@ -104,7 +104,7 @@ export default function Start() {
 
         if (e.key === 'Backspace' && typedWords[typedWords.length - 1] === ' ') return;
 
-        if (word_indexes[wordIndex][currentIndex] === word_indexes[words_array.length -1][word_indexes[words_array.length -1].length -1] || completed) {
+        if (wordIndex === words_array.length -1 && currentIndex === word_indexes[words_array.length -1].length -1 || completed) {
             setCompleted(true);
         }
 
