@@ -7,32 +7,29 @@ import React, { useContext, useEffect, useRef, useState } from 'react';
 export default function Start() {
     const { time, setTime, words, setWords, wordLength, setWordLength } = useContext(AppContext);
 
-    const words_array = words.split(' ');
-
     const all_done = useRef(false);
     const [score, setScore] = useState(0);
     const [started, setStarted] = useState(false);
-    const [wordIndex, setWordIndex] = useState(0);
     const [typedWords, setTypedWords] = useState('');
     const [completed, setCompleted] = useState(false);
     const [currentIndex, setCurrentIndex] = useState(0);
-    const [isPreloading, setIsPreloading] = useState(true);
-    const [wrongIndexes, setWrongIndexes] = useState<{ [key: number]: number[] }>({});
-    const [correctIndexes, setCorrectIndexes] = useState<{ [key: number]: number[] }>({});
+    const [wordIndex, setWordIndex] = useState(0);
+    const [wrongIndexes, setWrongIndexes] = useState<number[]>([]);
+    const [correctIndexes, setCorrectIndexes] = useState<number[]>([]);
 
-    let split_words = words.split(' ');
-    let mapped_index: { [key: number]: string } = {};
-    let word_indexes: { [key: number]: string } = {};
     const maxScore = words.split(' ').join('').length;
+    let mapped_index: { [key: number]: string } = {};
+    let split_words = words.split(' ');
+    let word_indexes: { [key: number]: string } = {};
+    for (let index = 0; index < split_words.length; index++) {
+        const element = split_words[index];
+        word_indexes[index] = element;
+
+    }
+
 
     for (let index = 0; index < words.length; index++) {
         mapped_index[index] = words[index];
-    }
-
-    for (let index = 0; index < words.split(' ').length; index++) {
-        const element = split_words[index];
-
-        word_indexes[index] = element;
     }
 
     useEffect(() => {
@@ -42,29 +39,9 @@ export default function Start() {
             setWords(new_words);
         }
 
-        if (words && isPreloading) {
-            for (let index = 0; index < words.split(' ').length; index++) {
-                setCorrectIndexes((correctIndexes) => {
-                    return {
-                        ...correctIndexes,
-                        [index]: []
-                    }
-                })
-
-                setWrongIndexes((wrongIndexes) => {
-                    return {
-                        ...wrongIndexes,
-                        [index]: []
-                    }
-                })
-            }
-
-            setIsPreloading(false);
-        }
-
         all_done.current = completed;
 
-    }, [time, words, wordLength, setWordLength, setWords, currentIndex, typedWords, completed, setCompleted, isPreloading])
+    }, [time, words, wordLength, setWordLength, setWords, currentIndex, wrongIndexes, correctIndexes, typedWords, completed, setCompleted])
 
     const handleStart = () => {
         setStarted(true);
@@ -92,46 +69,88 @@ export default function Start() {
     }
 
     const handleTyping = (e: any) => {
-        if(check_ignored_keys(e)) return
+        check_ignored_keys(e);
 
         if (e.keyCode === 32 && typedWords[typedWords.length - 1] === ' ') return
 
-        if (e.key === 'Backspace' && typedWords[typedWords.length - 1] !== ' ') {
+        if (e.key === 'Backspace') {
             currentIndex > 0 && setCurrentIndex(currentIndex - 1);
             setTypedWords(typedWords.slice(0, -1));
             return;
         }
 
-        if (e.key === 'Backspace' && typedWords[typedWords.length - 1] === ' ') return;
-
         if (currentIndex === words.length || completed) {
             setCompleted(true);
         }
 
-        if (e.keyCode === 32) {
-            setCurrentIndex(0)
-            setWordIndex(wordIndex + 1)
-        } else {
-            setCurrentIndex(currentIndex + 1)
-        }
+        // e.keyCode === 32 && (setWordIndex(wordIndex + 1), setCurrentIndex(0));
+
+
+        // if (e.key === split_words[wordIndex][currentIndex]) {
+        //     // setCorrectIndexes([...correctIndexes, currentIndex]);
+        //     console.log('correct');
+
+        // }
+        // else {
+        //     // setWrongIndexes([...wrongIndexes, currentIndex]);
+        //     console.log('wrong');
+        // }
+
+
+        
+        currentIndex < words.length && setCurrentIndex(currentIndex + 1);
+
 
         setTypedWords(typedWords + e.key);
-
-        words_array[wordIndex][currentIndex] === e.key ? (
-            setCorrectIndexes({ ...correctIndexes, [wordIndex]: [...correctIndexes[wordIndex], currentIndex] }),
-            (!wrongIndexes[wordIndex].includes(currentIndex) && e.keyCode !== 32) && setScore(score + 1)
-        ) : setWrongIndexes({ ...wrongIndexes, [wordIndex]: [...wrongIndexes[wordIndex], currentIndex] });
-
+        mapped_index[currentIndex] === e.key ? (
+            setCorrectIndexes([...correctIndexes, currentIndex]),
+            (!wrongIndexes.includes(currentIndex) && e.keyCode !== 32) && setScore(score + 1)
+        ) : setWrongIndexes([...wrongIndexes, currentIndex]);
     }
+
+    // const handleTyping = (e: any) => {
+    //     check_ignored_keys(e);
+
+    //     if (e.key === 'Backspace') {
+
+    //         return;
+    //     }
+
+
+
+    //     e.keyCode === 32 ?
+    //         (setWordIndex(wordIndex + 1), setCurrentIndex(0))
+    //         :
+    //         setCurrentIndex(currentIndex + 1);
+    //     ;
+
+    //     console.log(e.key, split_words[wordIndex][currentIndex]);
+        
+
+    //     if (e.key === split_words[wordIndex][currentIndex]) {
+    //         console.log('correct');
+    //     }
+    //     else if (e.key !== split_words[wordIndex][currentIndex] && e.keyCode !== 32) {
+    //         console.log('wrong');
+    //     }
+
+
+    //     // currentIndex < words.length && setCurrentIndex(currentIndex + 1);
+
+
+    //     // setTypedWords(typedWords + e.key);
+    //     // mapped_index[currentIndex] === e.key ? (
+    //     //     setCorrectIndexes([...correctIndexes, currentIndex]),
+    //     //     (!wrongIndexes.includes(currentIndex) && e.keyCode !== 32) && setScore(score + 1)
+    //     // ) : setWrongIndexes([...wrongIndexes, currentIndex]);
+    // }
 
     const check_ignored_keys = (e: any) => {
         const ignored_keys =
-            [9,13, 16, 17, 18, 20, 27, 33, 34, 35, 36, 37, 38, 39, 40, 45, 46, 91, 93, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 123];
+            [13, 16, 17, 18, 20, 27, 33, 34, 35, 36, 37, 38, 39, 40, 45, 46, 91, 93, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 123];
 
-        if (ignored_keys.includes(e.keyCode)) return true;
+        if (ignored_keys.includes(e.keyCode)) return;
     }
-
-    if (isPreloading) return <div>Preloading...</div>
 
     return (
         <Layout>
@@ -165,23 +184,15 @@ export default function Start() {
                 </div>
 
                 <div className='text-xl font-medium shadow-2xl rounded-xl p-10 leading-loose'>
-                    {words_array.map((word, index) => (
-                        <span key={index}>
-                            <span>
-                                {word.split('').map((letter, i) => (
-                                    <span key={i}
-                                        className={`
-                                    ${correctIndexes[index].includes(i) && 'text-green-500'}
-                                    ${wrongIndexes[index].includes(i) && 'text-red-500'}
-                                    ${index < wordIndex && !correctIndexes[index].includes(i) && 'text-red-500'}
-                                    ${wordIndex === index && words_array[index][currentIndex] === letter && currentIndex === i && 'text-purple-500'}
-                                    `}
-                                    >
-                                        {letter}
-                                    </span>
-                                ))}
-                            </span>
-                            <span> </span>
+                    {words.split("").map((word, index) => (
+                        <span
+                            key={index}
+                            className={`
+                        ${correctIndexes.includes(index) && 'text-green-500'}
+                        ${wrongIndexes.includes(index) && 'text-red-500'}
+                        ${currentIndex === index && 'text-purple-500'}
+                        `}>
+                            {word}
                         </span>
                     ))}
                 </div>
