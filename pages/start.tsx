@@ -92,7 +92,7 @@ export default function Start() {
     }
 
     const handleTyping = (e: any) => {
-        if(check_ignored_keys(e)) return
+        if (check_ignored_keys(e)) return
 
         if (e.keyCode === 32 && typedWords[typedWords.length - 1] === ' ') return
 
@@ -104,7 +104,11 @@ export default function Start() {
 
         if (e.key === 'Backspace' && typedWords[typedWords.length - 1] === ' ') return;
 
-        if (wordIndex === words_array.length -1 && currentIndex === word_indexes[words_array.length -1].length -1 || completed) {
+        if (
+            wordIndex === words_array.length - 1 && currentIndex === word_indexes[words_array.length - 1].length - 1 ||
+            completed ||
+            wordIndex === words_array.length - 1 && e.keyCode === 32
+        ) {
             setCompleted(true);
         }
 
@@ -126,7 +130,7 @@ export default function Start() {
 
     const check_ignored_keys = (e: any) => {
         const ignored_keys =
-            [9,13, 16, 17, 18, 20, 27, 33, 34, 35, 36, 37, 38, 39, 40, 45, 46, 91, 93, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 123];
+            [9, 13, 16, 17, 18, 20, 27, 33, 34, 35, 36, 37, 38, 39, 40, 45, 46, 91, 93, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 123];
 
         if (ignored_keys.includes(e.keyCode)) return true;
     }
